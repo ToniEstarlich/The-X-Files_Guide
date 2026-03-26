@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>The X‑Files</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+      color: #000000;
+     font-family: 'Courier New', Courier, monospace;
+    }
+
+    /* Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      background: #157526;
+      padding: 10px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      z-index: 1000;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.1);
+      transition: background 0.2s;
+    }
+
+    .navbar a:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* Logo centrado y responsive */
+    .xfiles-logo {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 70px;
+      letter-spacing: 5px;
+      color: white;
+      text-align: center;
+      margin: 20px 0;
+       text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .letter-x {
+      font-size: 100px;
+      font-weight: bold;
+      color: white;
+      text-shadow:
+        1px 0 #fff,
+        0 1px #fff,
+        2px 1px #fff,
+        1px 2px #fff,
+        3px 2px #fff,
+        2px 3px #fff;
+      margin-right: 5px;
+      text-shadow: 0 4px 12px rgba(3, 136, 54, 0.2);
+    }
+
+    h2 {
+      background: #157526;
+      color: white;
+      padding: 8px;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      font-size: 20px;
+    }
+
+    .season-container {
+      column-count: 4;          
+      column-gap: 30px;         
+      column-rule: 1px solid rgb(173, 230, 191); 
+      margin-bottom: 40px;      
+    }
+
+    .episode {
+      background: white;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      break-inside: avoid;      
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .episode:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .episode img {
+      float: left;
+      margin-right: 10px;
+      width: 180px;
+      border-radius: 5px;
+    }
+
+    .episode h3 {
+      margin: 0 0 5px 0;
+      color: #157526;
+      font-size: 16px;
+    }
+
+    .episode p {
+      margin: 2px 0;
+      font-size: 14px;
+    }
+
+    .clear {
+      clear: both;
+    }
+
+    /* MEDIA QUERIES: responsive columns */
+    @media (max-width: 1200px) {
+      .season-container { column-count: 3; }
+      .episode img { width: 140px; }
+    }
+
+    @media (max-width: 900px) {
+      .season-container { column-count: 2; column-gap: 20px; }
+      .episode img { width: 120px; }
+      .xfiles-logo { font-size: 60px; }
+      .letter-x { font-size: 90px; }
+      h2 { font-size: 18px; }
+    }
+
+    @media (max-width: 600px) {
+      .season-container { column-count: 1; }
+      .episode img { width: 100%; float: none; margin: 0 0 10px 0; }
+      .xfiles-logo { font-size: 50px; }
+      .letter-x { font-size: 70px; }
+      h2 { font-size: 16px; padding: 6px; }
+      .episode h3 { font-size: 14px; }
+      .episode p { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="navbar" id="navbar">
+  <!-- Links a temporadas se generarán dinámicamente -->
+</div>
+
+<h1 class="xfiles-logo">
+  The <span class="letter-x">X</span> Files
+</h1>
+
+<div id="episodes"></div>
+
+<script>
+fetch('https://api.tvmaze.com/shows/430/episodes')
+  .then(res => res.json())
+  .then(data => {
+    const container = document.getElementById('episodes');
+    const navbar = document.getElementById('navbar');
+
+    // Agrupar por temporada
+    const seasons = {};
+    data.forEach(ep => {
+      const s = ep.season;
+      if (!seasons[s]) seasons[s] = [];
+      seasons[s].push(ep);
+    });
+
+    // Mostrar por temporada y crear links en navbar
+    for (let season in seasons) {
+      const h = document.createElement('h2');
+      h.textContent = 'Season ' + season;
+      h.id = `season-${season}`; // id para el anchor
+      container.appendChild(h);
+
+      // Link en navbar
+      const link = document.createElement('a');
+      link.href = `#season-${season}`;
+      link.textContent = 'Season ' + season;
+      navbar.appendChild(link);
+
+      const seasonDiv = document.createElement('div');
+      seasonDiv.className = 'season-container';
+      container.appendChild(seasonDiv);
+
+      seasons[season].forEach(ep => {
+        const div = document.createElement('div');
+        div.className = 'episode';
+
+        const title = document.createElement('h3');
+        title.textContent = `E${ep.number}: ${ep.name}`;
+        div.appendChild(title);
+
+        if (ep.image && ep.image.medium) {
+          const img = document.createElement('img');
+          img.src = ep.image.medium;
+          div.appendChild(img);
+        }
+
+        const sum = document.createElement('p');
+        sum.innerHTML = ep.summary || 'Sin resumen';
+        div.appendChild(sum);
+
+        const clear = document.createElement('div');
+        clear.className = 'clear';
+        div.appendChild(clear);
+
+        seasonDiv.appendChild(div);
+      });
+    }
+  })
+  .catch(err => console.error(err));
+</script>
+
+</body>
+</html>
